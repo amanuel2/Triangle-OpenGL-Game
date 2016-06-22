@@ -1,0 +1,16 @@
+﻿  MainGame.cpp
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.h(44): warning C4215: nonstandard extension used: long float
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(24): warning C4010: single-line comment contains line-continuation character
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(42): warning C4553: '==': operator has no effect; did you intend '='?
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(43): warning C4553: '==': operator has no effect; did you intend '='?
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(227): warning C4244: 'argument': conversion from 'double' to 'GLclampf', possible loss of data
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(283): warning C4244: 'argument': conversion from 'double' to 'GLclampf', possible loss of data
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(289): warning C4244: 'argument': conversion from 'double' to 'GLclampf', possible loss of data
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(295): warning C4244: 'argument': conversion from 'double' to 'GLclampf', possible loss of data
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.cpp(301): warning C4244: 'argument': conversion from 'double' to 'GLclampf', possible loss of data
+  Generating Code...
+  Compiling...
+  main.cpp
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\maingame.h(44): warning C4215: nonstandard extension used: long float
+  Generating Code...
+  GameTut.vcxproj -> C:\Users\Amanuel\Documents\Visual Studio 2015\Projects\GameTut\Debug\GameTut.exe
