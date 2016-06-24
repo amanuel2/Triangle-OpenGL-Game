@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <time.h>
 #include<SDL_image.h>
-
+#include "Sprite.h"
+#include "Errors.h"
+#include "GLSLCompliation.h"
 
 typedef std::string str;
 
@@ -38,11 +40,12 @@ private:
 	void initSystem(), processInput(), gameLoop(),
 		quitCheck(), drawGame(), MaintainColor(),
 		drawTriangle(), MaintainColorAv(), HandleVtx(),
-		displayCoordinates(), WriteStatements();
+		displayCoordinates(), WriteStatements(),initShaders();
 	const str currentDateTime();
 	std::ofstream infoFile;
 	long float *s = new long float[4];
 	float *vertexData = new float[6];
+	GLfloat angle = 0.5;
 	float *av = new float[3];
 	char dir = 'r', str[26];
 	bool loadMedia(char* filePath);
@@ -51,5 +54,7 @@ private:
 	SDL_Surface *gHelloWorld;
 	GameState __gameState;
 	SDL_Window *__window;
-
+	Sprite _sprite;
+	Errors err;
+	GLSLCompliation _colorProgram;
 };

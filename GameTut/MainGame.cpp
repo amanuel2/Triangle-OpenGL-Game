@@ -63,11 +63,11 @@ void MainGame::HandleVtx()
 
 void MainGame::displayCoordinates()
 {
-	cout << "COORDINATES " << endl;
-	cout << "-----------" << endl;
-	cout << "[" << vertexData[0] << "," << vertexData[1] << "]" << endl;
-	cout << "[" << vertexData[2] << "," << vertexData[3] << "]" << endl;
-	cout << "[" << vertexData[4] << "," << vertexData[5] << "]" << endl;
+	//cout << "COORDINATES " << endl;
+	//cout << "-----------" << endl;
+	//cout << "[" << vertexData[0] << "," << vertexData[1] << "]" << endl;
+	//cout << "[" << vertexData[2] << "," << vertexData[3] << "]" << endl;
+	//cout << "[" << vertexData[4] << "," << vertexData[5] << "]" << endl;
 }
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
@@ -104,8 +104,6 @@ void MainGame::WriteStatements(){
 void MainGame::run() {
 	//Initalizes Systems First
 	initSystem();
-
-
 	//Then Loops until user Exits
 	gameLoop();
 }
@@ -121,18 +119,23 @@ void MainGame::MaintainColorAv()
 	G - Green = Greeness
 	B - Blue = Blueness
 	*/
-	cout << "TRIANGLE : " << "R : " << av[0] << " G : " << av[1] << "B : " << av[2] << endl;
+	//cout << "TRIANGLE : " << "R : " << av[0] << " G : " << av[1] << "B : " << av[2] << endl;
 }
 
 void MainGame::drawTriangle()
 {
-	//Draw a triangle using the crappy immediate mode
-	glBegin(GL_TRIANGLES);
-	glColor3f(av[0], av[1], av[2]);
-	glVertex2f(vertexData[0], vertexData[1]);
-	glVertex2f(vertexData[2], vertexData[3]);
-	glVertex2f(vertexData[4], vertexData[5]);
-	glEnd();
+	glPushMatrix();
+	glRotatef(angle, 0, 0, 1);
+	glTranslatef(0.2f, 0.2f, 0.0f);
+		
+		//Draw a triangle using the crappy immediate mode
+		glBegin(GL_TRIANGLES);
+		glColor3f(0.255,0.255,0.255);
+				glVertex2f(vertexData[0], vertexData[1]);
+				glVertex2f(vertexData[2], vertexData[3]);
+				glVertex2f(vertexData[4], vertexData[5]);
+		glEnd();
+	glPopMatrix();
 }
 void MainGame::MaintainColor()
 {
@@ -148,14 +151,9 @@ void MainGame::MaintainColor()
 	B - Blue = Blueness
 	A - Alpha = Depth 
 	*/
-	cout << "BACKGROUND : " << "R : " << s[0]  << " G : " << s[1] << "B : " << s[2]  << " A : " << s[3] << endl;
+	//cout << "BACKGROUND : " << "R : " << s[0]  << " G : " << s[1] << "B : " << s[2]  << " A : " << s[3] << endl;
 }
 
-void fatalErr(string msg)
-{
-	cout << msg << endl;
-	//exit(1);
-}
 bool MainGame::loadMedia(char* filePath)
 {
 	//Loading success flag
@@ -205,19 +203,19 @@ void MainGame::initSystem()
 	);
 	//Checks for any errors..
 	if (__window == NULL)
-		fatalErr("Could Not Create SDL...");
+		err.fatalErr("Could Not Create SDL...");
 
 
 	SDL_GLContext glConx = SDL_GL_CreateContext(__window);
 	if (glConx == NULL)
-		fatalErr("Could not create GL Context");
+		err.fatalErr("Could not create GL Context");
 
 	//Sets up Extension. For
 	//Unsported Hardware
 	GLenum errorGl = glewInit();
 
 	if (errorGl != GLEW_OK /*Or 0*/)
-		fatalErr("Couldnt Initalize Glew!");
+		err.fatalErr("Couldnt Initalize Glew!");
 
 	//Tell SDL that we want a double buffered window so we dont get
 	//any flickering
@@ -226,23 +224,43 @@ void MainGame::initSystem()
 	//Set the background color to blue
 	glClearColor(s[1], s[2], s[3], s[4]);
 
-	this->loadMedia("2XcTz.bmp");
+	_sprite.init(-1.0f, -1.0f, 1.0f, 1.0f);
 
+	this->initShaders();
+
+}
+
+
+void MainGame::initShaders()
+{
+	_colorProgram.compileShaders("colorshading.vert", "colorshading.frag");
+	_colorProgram.addAttribute("V_POSITIONS");
+	_colorProgram.linkShaders();
 }
 
 void MainGame::drawGame() 
 {
 	//glClearDepth(0.0f);
+	//CYCLE STARTS
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
 	//Draw a triangle using the crappy immediate mode
+//	glBegin(GL_TRIANGLES);
+//	glColor3f(0.255, 0.255, 0.255);
+//	glVertex2f(vertexData[0], vertexData[1]);
+//	glVertex2f(vertexData[2], vertexData[3]);
+//	glVertex2f(vertexData[4], vertexData[5]);
+//	glEnd();
 	glBegin(GL_TRIANGLES);
-	glColor3f(av[0], av[1], av[2]);
+	glColor3f(0.255, 0.255, 0.255);
 	glVertex2f(vertexData[0], vertexData[1]);
 	glVertex2f(vertexData[2], vertexData[3]);
 	glVertex2f(vertexData[4], vertexData[5]);
 	glEnd();
 
-	
+	_colorProgram.use();
+	_sprite.draw();
+	_colorProgram.unuse();
 
 	//Swap our buffer and draw everything to the screen!
 	SDL_GL_SwapWindow(__window);
@@ -263,8 +281,8 @@ void MainGame::processInput()
 			infoFile.close();
 			break;
 		case SDL_MOUSEMOTION:
-			std::cout << " Current X " << evt.motion.x << std::endl;
-			std::cout << " Current Y " << evt.motion.y << std::endl;
+			//std::cout << " Current X " << evt.motion.x << std::endl;
+			//std::cout << " Current Y " << evt.motion.y << std::endl;
 			break;
 		case SDL_KEYUP:
 			if (evt.key.keysym.sym == SDLK_ESCAPE)
@@ -342,8 +360,9 @@ void MainGame::processInput()
 			}
 
 			else
-				fatalErr("UNDEFINED RGBA COLOR");
+				err.fatalErr("UNDEFINED RGBA COLOR");
 
+			angle = angle +  12;
 			this->MaintainColor();
 			this->HandleVtx();
 			this->drawTriangle();
