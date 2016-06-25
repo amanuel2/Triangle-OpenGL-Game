@@ -1,26 +1,56 @@
 #include "GLSLCompliation.h"
+#include "Errors.h"
+
+#include <vector>
+
+#include <fstream>
+
+//The : _numAttributes(0) ect. is an initialization list. It is a better way to initialize variables, since it avoids an extra copy. 
+GLSLCompliation::GLSLCompliation() : _numAttributes(0), _programID(0), _vertexShaderID(0), _fragmentShaderID(0)
+{
+
+}
 
 
-GLSLCompliation::GLSLCompliation() :vtx_shader(0), frag_shader(0), _programID(0), status(0)
+GLSLCompliation::~GLSLCompliation()
 {
 }
 
-void GLSLCompliation::run()
-{
+//Compiles the shaders into a form that your GPU can understand
+void GLSLCompliation::compileShaders(const std::string& vertexShaderFilePath, const std::string& fragmentShaderFilepath) {
+	//Vertex and fragment shaders are successfully compiled.
+	//Now time to link them together into a program.
+	//Get a program object.
+	_programID = glCreateProgram();
+	//Create the vertex shader object, and store its ID
+	_vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	if (_vertexShaderID == 0) {
+		err.fatalErr("Vertex shader failed to be created!");
+	}
+
+	//Create the fragment shader object, and store its ID
+	_fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	if (_fragmentShaderID == 0) {
+		err.fatalErr("Fragment shader failed to be created!");
+	}
+
+	//Compile each shader
+	compileShader(vertexShaderFilePath, _vertexShaderID);
+	compileShader(fragmentShaderFilepath, _fragmentShaderID);
 }
 
-//Make Shaders One Program.
-void GLSLCompliation::linkShaders()
-{
+void GLSLCompliation::linkShaders() {
+
 
 	//Attach our shaders to our program
-	glAttachShader(_programID, vtx_shader);
-	glAttachShader(_programID, frag_shader);
+	glAttachShader(_programID, _vertexShaderID);
+	glAttachShader(_programID, _fragmentShaderID);
 
 	//Link our program
 	glLinkProgram(_programID);
 
 	//Note the different functions here: glGetProgram* instead of glGetShader*.
+	GLint isLinked = 0;
 	glGetProgramiv(_programID, GL_LINK_STATUS, (int *)&isLinked);
 	if (isLinked == GL_FALSE)
 	{
@@ -28,40 +58,39 @@ void GLSLCompliation::linkShaders()
 		glGetProgramiv(_programID, GL_INFO_LOG_LENGTH, &maxLength);
 
 		//The maxLength includes the NULL character
-		std::vector<GLchar> infoLog(maxLength);
-		glGetProgramInfoLog(_programID, maxLength, &maxLength, &infoLog[0]);
-		//print the error log and quit
-		std::printf("%s\n", &(infoLog[0]));
+		std::vector<char> errorLog(maxLength);
+		glGetProgramInfoLog(_programID, maxLength, &maxLength, &errorLog[0]);
 
-		err.fatalErr("Linking Shaders Failed");
+
 
 		//We don't need the program anymore.
 		glDeleteProgram(_programID);
 		//Don't leak shaders either.
-		glDeleteShader(vtx_shader);
-		glDeleteShader(frag_shader);
+		glDeleteShader(_vertexShaderID);
+		glDeleteShader(_fragmentShaderID);
 
-		//Use the infoLog as you see fit.
-
-		//In this simple program, we'll just leave
-		return;
+		//print the error log and quit
+		std::printf("%s\n", &(errorLog[0]));
+		err.fatalErr("Shaders failed to link!");
 	}
 
 	//Always detach shaders after a successful link.
-	glDetachShader(_programID, vtx_shader);
-	glDetachShader(_programID, vtx_shader);
+	glDetachShader(_programID, _vertexShaderID);
+	glDetachShader(_programID, _fragmentShaderID);
+	glDeleteShader(_vertexShaderID);
+	glDeleteShader(_fragmentShaderID);
 }
 
 //Adds an attribute to our shader. SHould be called between compiling and linking.
 void GLSLCompliation::addAttribute(const std::string& attributeName) {
-	glBindAttribLocation(_programID, _numAttributes_in++, attributeName.c_str());
+	glBindAttribLocation(_programID, _numAttributes++, attributeName.c_str());
 }
 
 //enable the shader, and all its attributes
 void GLSLCompliation::use() {
 	glUseProgram(_programID);
 	//enable all the attributes we added with addAttribute
-	for (int i = 0; i < _numAttributes_in; i++) {
+	for (int i = 0; i < _numAttributes; i++) {
 		glEnableVertexAttribArray(i);
 	}
 }
@@ -69,118 +98,60 @@ void GLSLCompliation::use() {
 //disable the shader
 void GLSLCompliation::unuse() {
 	glUseProgram(0);
-	for (int i = 0; i < _numAttributes_in; i++) {
+	for (int i = 0; i < _numAttributes; i++) {
 		glDisableVertexAttribArray(i);
 	}
 }
 
+//Compiles a single shader file
+void GLSLCompliation::compileShader(const std::string& filePath, GLuint id) {
 
-
-void GLSLCompliation::checkCompliation(GLuint shader, const str& type)
-{
-	if (shader == 0 && type == "vtx")
-		err.fatalErrShader("Compliation Shader Fail " , "Vertex Shader");
-	else if (shader == 0 && type == "frag")
-		err.fatalErrShader("Compliation Shader Fail ", "Fragment Shader");
-	else if(shader == 0)
-		err.fatalErrShader("Compliation Shader Fail", "Unkown");
-
-
-}
-
-void GLSLCompliation::checkFileErr(const str&path)
-{
-	if (shader_file.fail()) {
-		err.fatalErrFile(path);
+	//Open the file
+	std::ifstream shaderFile(filePath);
+	if (shaderFile.fail()) {
+		perror(filePath.c_str());
+		err.fatalErr("Failed to open " + filePath);
 	}
-}
 
+	//File contents stores all the text in the file
+	std::string fileContents = "";
+	//line is used to grab each line of the file
+	std::string line;
 
-void GLSLCompliation::checkErrFileCompile(const str& type)
-{
-	if (status == GL_FALSE)
+	//Get all the lines in the file and add it to the contents
+	while (std::getline(shaderFile, line)) {
+		fileContents += line + "\n";
+	}
+
+	shaderFile.close();
+
+	//get a pointer to our file contents c string;
+	const char* contentsPtr = fileContents.c_str();
+	//tell opengl that we want to use fileContents as the contents of the shader file
+	glShaderSource(id, 1, &contentsPtr, nullptr);
+
+	//compile the shader
+	glCompileShader(id);
+
+	//check for errors
+	GLint success = 0;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+
+	if (success == GL_FALSE)
 	{
 		GLint maxLength = 0;
-		glGetShaderiv(vtx_shader, GL_INFO_LOG_LENGTH, &maxLength);
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &maxLength);
 
-		// The maxLength includes the NULL character
-		std::vector<GLchar> errorLog(maxLength);
-		glGetShaderInfoLog(vtx_shader, maxLength, &maxLength, &errorLog[0]);
+		//The maxLength includes the NULL character
+		std::vector<char> errorLog(maxLength);
+		glGetShaderInfoLog(id, maxLength, &maxLength, &errorLog[0]);
 
-		// Provide the infolog in whatever manor you deem best.
-		cout << errorLog[0] << endl;
-		// Exit with failure.
-		glDeleteShader(vtx_shader); // Don't leak the shader.
-		
-		//print the error log and quit
+		//Provide the infolog in whatever manor you deem best.
+		//Exit with failure.
+		glDeleteShader(id); //Don't leak the shader.
+
+							//Print error log and quit
 		std::printf("%s\n", &(errorLog[0]));
-
-		 err.fatalErr( type + " Shader Failed to Compile");
-
-		return;
-
+		err.fatalErr("Shader " + filePath + " failed to compile");
 	}
-}
-
-///Open File
-///Read Data
-///Compile Shaders
-void GLSLCompliation::compileShaders(const str& vertexShaderFilePath,const str& fragShaderFilePath)
-{
-	//Get a program object.
-	_programID = glCreateProgram();
-	vtx_shader =  glCreateShader(GL_VERTEX_SHADER);
-	this->checkCompliation(vtx_shader,"vtx");
-	frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	this->checkCompliation(frag_shader, "frag");
-
-	glCompileShader(vtx_shader);
-	glCompileShader(frag_shader);
-
-	compileShader(vertexShaderFilePath, vtx_shader, "vert");
-	compileShader(fragShaderFilePath,frag_shader,"frag");
-
-}
-
-void GLSLCompliation::compileShader(const str& filePath, GLuint shader_param, const str&type)
-{
-	cout << "TYPE : " << type << endl;
-	shader_file.open(filePath);
-	if (type == "vert")
-		this->checkFileErr("vert");
-	else if(type == "frag")
-		this->checkFileErr("frag");
-	else
-		this->checkFileErr("Unkown");
-
-
-	while (std::getline(shader_file, line_read)) {
-		file_content += line_read + "\n";
-	}
-
-	shader_file.close();
-
-	//Getting Source.
-	//All text in 1 string, file_content
-	//get a pointer to our file contents c string;
-	const char* contentsPtr = file_content.c_str();
-	//tell opengl that we want to use fileContents as the contents of the shader file
-	glShaderSource(shader_param, 1, &contentsPtr, nullptr);
-
-	glCompileShader(shader_param);
-	//Check Errors For Vtx Shader File.
-	glGetShaderiv(shader_param, GL_COMPILE_STATUS, &status);
-	
-	if (type == "vert")
-		this->checkErrFileCompile("Vertex");
-	else if (type == "frag")
-		this->checkErrFileCompile("Fragment");
-	else
-		this->checkErrFileCompile("Unkown");
-
-}
-
-
-GLSLCompliation::~GLSLCompliation()
-{
 }

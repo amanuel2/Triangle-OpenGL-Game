@@ -1,1 +1,5 @@
-﻿  GameTut.vcxproj -> C:\Users\Amanuel\Documents\Visual Studio 2015\Projects\GameTut\Debug\GameTut.exe
+﻿  Sprite.cpp
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\sprite.cpp(63): warning C4244: '=': conversion from 'double' to 'GLubyte', possible loss of data
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\sprite.cpp(70): warning C4244: '=': conversion from 'double' to 'GLubyte', possible loss of data
+c:\users\amanuel\documents\visual studio 2015\projects\gametut\gametut\sprite.cpp(76): warning C4244: '=': conversion from 'double' to 'GLubyte', possible loss of data
+  GameTut.vcxproj -> C:\Users\Amanuel\Documents\Visual Studio 2015\Projects\GameTut\Debug\GameTut.exe

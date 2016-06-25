@@ -1,6 +1,8 @@
 #pragma once
 #include<GL\glew.h>
 #include<iostream>
+#include<cstddef>
+#include"Vertex.h"
 
 using std::cout;
 using std::endl;
@@ -15,7 +17,7 @@ public:
 
 private:
 	float _width, _height, _x, _y;
-	float vertexPoints[12];
+	Vertex vertexPoints[6];
 	//Gluint -> unsigned int + Must 32BIT .
 	GLuint _vboID;
 };

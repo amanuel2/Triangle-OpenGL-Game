@@ -31,25 +31,49 @@ void Sprite::init(float x, float y, float width, float height)
 	//  |		  |
 	//  |_________|
 
+	//This array will hold our vertex data.
+	//We need 6 vertices, and each vertex has 2
+	//floats for X and Y
+
 	//First Triangle
-	vertexPoints[0] = x;
-	vertexPoints[1] = y + (height*2);
+	vertexPoints[0].position.x = x + width;
+	vertexPoints[0].position.y = y + height;
 
-	vertexPoints[2] = x + (width/2);
-	vertexPoints[3] = y + (height/2);
+	vertexPoints[1].position.x = x;
+	vertexPoints[1].position.y = y + height;
 
-	vertexPoints[4] = x;
-	vertexPoints[5] = y;
+	vertexPoints[2].position.x = x;
+	vertexPoints[2].position.y = y;
 
-	//Second Triangles
-//	vertexPoints[6] = x + width;
-//	vertexPoints[7] = y + height;
+	//Second Triangle
+	vertexPoints[3].position.x = x;
+	vertexPoints[3].position.y = y;
 
-//	vertexPoints[8] = x;
-//	vertexPoints[9] = y;
+	vertexPoints[4].position.x = x + width;
+	vertexPoints[4].position.y = y;
 
-//	vertexPoints[10] = x;
-//	vertexPoints[11] = y + height;
+	vertexPoints[5].position.x = x + width;
+	vertexPoints[5].position.y = y + height;
+
+	//Set all vertex colors to rgba(156, 39, 176,1.0) Purple Material Colors
+	for (int i = 0; i < 6; i++) {
+		vertexPoints[i].color.R = 156;
+		vertexPoints[i].color.G = 39;
+		vertexPoints[i].color.B = 176;
+		vertexPoints[i].color.A = 1.0;
+	}
+
+	//rgba(244, 67, 54,1.0)
+	vertexPoints[1].color.R = 244;
+	vertexPoints[1].color.G = 67;
+	vertexPoints[1].color.B = 54;
+	vertexPoints[1].color.A = 1.0;
+
+	//rgba(63, 81, 181,1.0)
+	vertexPoints[4].color.R = 63;
+	vertexPoints[4].color.G = 81;
+	vertexPoints[4].color.B = 181;
+	vertexPoints[4].color.A = 1.0;
 
 
 	//Make Buffer Active
@@ -104,13 +128,18 @@ void Sprite::draw()
 	*(as we did in init function)
 	* We put in 2 because its x,and y coordinates
 	*/
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	//Position Attribute Pointer
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),(void *) offsetof(Vertex, position));
+
+
+
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (void *)offsetof(Vertex, color));
 
 
 	//Now Drawing
 	//0 , since position 0 is our first data.
 	//and 6 vertices
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//Disable attrib array
 	glDisableVertexAttribArray(0);

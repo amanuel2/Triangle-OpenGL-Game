@@ -161,6 +161,7 @@
     <ClInclude Include="GLSLCompliation.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="colorshading.frag" />
